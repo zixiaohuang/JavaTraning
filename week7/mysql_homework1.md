@@ -1,4 +1,7 @@
 一条SQL语句在MySQL中是如何执行的？
+<div align="center">
+<img src=https://user-images.githubusercontent.com/32962270/197373222-6edd6b66-f358-45b6-846d-4cd55cccf6b2.png />
+</div>
 ![image](https://user-images.githubusercontent.com/32962270/197373222-6edd6b66-f358-45b6-846d-4cd55cccf6b2.png)
 
 1.连接器
