@@ -168,15 +168,227 @@ c.THREAD_ID;
 要点：<br>
 优点是什么？<br>
 缺点是什么？<br>
-索引分类有哪些？特点是什么？<br>
-索引创建的原则是什么？<br>
-有哪些使用索引的注意事项？<br>
-如何知道 SQL 是否用到了索引？<br>
-请你解释一下索引的原理是什么？【重点】<br>
 
-说清楚为什么要用 B+Tree<br>
-<br>
-<br>
+##### 索引分类有哪些？特点是什么？
+
+按照数量分类：
+
+1.单列索引
+
+- 主键索引：值必须是唯一的，不允许有空值
+
+`ALTER TABLE table_name ADD PRIMARY KEY (column_name);`
+
+- 普通索引：基本索引类型，没有什么限制，允许在定义索引的列中插入重复值和空值
+
+`ALTER TABLE table_name ADD INDEX index_name(column_name);`
+
+- 唯一索引：索引列中的值必须是唯一的，但是允许为空值
+
+`CREATE UNIQUE INDEX index_name ON table(column_name);`
+
+- 全文索引：只能在文本类型CHAR、VARCHAR、TEXT类型字段上创建全文索引。
+
+```sql
+ #创建表时，创建全文索引
+ CREATE TABLE `t_fulltext` ( 
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `content` varchar(100) DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  FULLTEXT KEY `idx_content` (`content`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+\#创建全文索引
+ ALTER TABLE `t_fulltext` ADD FULLTEXT INDEX `idx_content`(`content`);
+```
+
+- 空间索引
+- 前缀索引
+
+2.组合索引
+
+`ALTER TABLE table_name ADD INDEX index_name(column1,column2);`
+
+MyIsam索引
+
+
+
+1.主键索引
+
+<img src="/Users/huangzixiao/Library/Application Support/typora-user-images/image-20221023221009032.png" alt="image-20221023221009032" style="zoom:67%;" />
+
+2.辅助索引
+
+MyISAM中辅助索引和主键索引结构一样，没有区别，叶子节点存储的都是行记录的**磁盘地址**。只是主键索引的键值是唯一的，而辅助索引的键值可以重复。
+
+
+
+InnoDB索引
+
+**1.聚簇索引**
+
+<img src="/Users/huangzixiao/Library/Application Support/typora-user-images/image-20221023175525168.png" alt="image-20221023175525168" style="zoom:67%;" />
+
+一般情况下，聚簇索引等同于主键索引。主键索引的叶子节点会存储数据行。
+
+**InnoDB要求表必须有一个主键索引。**当一个表没有创建主键索引时，InnoDB会自动创建一个ROWID字段来构建聚簇索引。
+
+InnoDB创建索引的具体规则如下：
+
+1.在表上定义主键PRIMARY KEY，InnoDB将主键索引作用聚簇索引
+
+2.如果表上没有定义主键，InnoDB会选择第一个不为NULL的唯一索引列用作聚簇索引
+
+3.如果以上两个都没有，InnoDB会使用一个6字节长整形的隐式字段ROWID字段构建聚簇索引。该ROWID字段会在插入新行时自动递增。
+
+**磁盘IO次数：**2次+检索叶子节点数量
+
+**2.辅助索引**
+
+<img src="/Users/huangzixiao/Library/Application Support/typora-user-images/image-20221023180600328.png" alt="image-20221023180600328" style="zoom:67%;" />
+
+除聚簇索引之外的所有索引都称为辅助索引。辅助索引只会存储主键值而非磁盘地址。
+
+底层叶子节点按照(age, id)的顺序排序，先按照age列从小到大排序，age列相同时按照id列从小到大排序
+
+使用辅助索引需要检索两遍索引：
+
+- 首先检索辅助索引获得主键
+- 然后使用主键到主索引中检索获得记录
+
+**磁盘IO次数：**2次+检索叶子节点数量 + 记录数*3 （因为需要回表查询，回表查询大概需要3次磁盘IO）
+
+
+
+**3.组合索引**
+
+表t_multiple_indx，id为主键列，创建了一个联合索引id x_abc(a,b,c)，构建的B+树索引结构如图所示。索引树中节点中的索引项按照(a,b,c)的顺序从大到小排列，先按照a排序，a列相同时按照b列排序，b列相同按照c列排序。如果索引项都相同，按照主键id排序
+
+<img src="/Users/huangzixiao/Library/Application Support/typora-user-images/image-20221023192746579.png" alt="image-20221023192746579" style="zoom:67%;" />
+
+最左匹配原则：组合索引查询是，会一直向右匹配直到遇到范围查询(>、<、between、like)就停止匹配。如果查询条件不包括a列，比如筛选条件只有(b,c)或者c列是无法使用组合索引的。所以创建(a,b,c)相当于创建了(a)、(a,b)、(a,b,c)三个索引
+
+组合索引创建原则：
+
+1. 频繁出现在where条件中的列，建议创建组合索引
+2. 频繁出现order by 和 group by语句的列，建议按照顺序去创建组合索引
+3. 常出现select语句中的列，也建议创建组合索引
+
+
+
+**4.覆盖索引**
+
+select中列数据，如果可以直接在辅助索引树上全部获取，也就是索引树已经“覆盖”了我们的查询要求，MySQL就不会白费力气的回表查询
+
+##### 有哪些使用索引的注意事项？
+
+注意事项
+
+- 不要在列上使用函数和进行运算，会导致索引失效
+- 尽量避免使用!=或not in 或<>等否定操作符，会导致索引失效
+- 组合索引最左匹配原则
+- 如果mysql估计使用全表扫描要比使用索引快,则不使用索引
+
+
+
+不需要使用索引
+
+- 数据唯一性差的字段不要使用索引。因为无法准确的找到想要的数据,所以查完索引后依然还需要过一遍数据,这样反而增加了查询量
+- 频繁更新的字段不要使用索引,频繁更新会导致索引也会频繁更新,降低写的效率
+- 字段不在where语句出现时不要添加索引:只有在where语句出现，mysql才会去使用索引
+- 数据量少的表不要使用索引,使用了改善也不大
+
+
+
+##### 如何知道 SQL 是否用到了索引？
+
+`explain select a,b from  t_multiple_index where  b=16;`
+
+![image-20221023215949555](/Users/huangzixiao/Library/Application Support/typora-user-images/image-20221023215949555.png)
+
+`explain select * from t_multiple_index where b=16 and c=4 and a=13;`
+
+![image-20221023220010370](/Users/huangzixiao/Library/Application Support/typora-user-images/image-20221023220010370.png)
+
+通过explain查看
+
+possible keys:可能使用哪些索引来查找。key 显示 NULL 的情况，这种情况是因为表中数据不多，mysql认为索引对此查询帮助不大，选择了全表查询。 
+
+key：实际采用哪个索引来优化对该表的访问。
+
+
+
+##### 请你解释一下索引的原理是什么？【重点】
+
+帮助MySQL高效获取数据的数据结构，加快数据库查询速度
+
+优势：
+
+- 提高数据检索效率、降低数据库的IO成本
+- 索引列对数据进行排序，降低数据排序的成本，降低CPU消耗
+
+劣势：
+
+- 占据磁盘空间
+- 降低更新表的效率，每次对表增删改操作，不仅要保存数据，还要维护索引文件
+
+
+
+##### 说清楚为什么要用 B+Tree
+
+**Hash表**
+
+优点：等值查询
+
+缺点：
+
+1.不支持范围快速查找，范围查找时还是只能通过扫描全表方式
+
+2.数据结构比较稀疏，不适合做聚合，不适合范围查找
+
+**二叉查找树**
+
+理想情况可以达到O(logn)
+
+极端情况下，会退化为单向链表=查找全表扫描
+
+**红黑树**
+
+近似平衡二叉树，通过染色和平衡因子，通过左旋/右旋控制二叉树平衡（层级最多相差1）
+
+缺点：
+
+1.时间复杂度和树高相关：树有多高就需要检索多少次，每个节点的读取，都对应一次磁盘IO操作
+
+2.平衡二叉树不支持范围查询快速查找，范围查询时需要从根节点多次遍历，查询效率极差
+
+3.数据量大的情况下，索引存储空间占用极大
+
+**B树**
+
+想减少IO操作，就要尽量降低树的高度。每个节点存储多个元素，就将二叉树改造成了多叉树，通过增加树的叉树，将树从高瘦变成矮胖。
+
+优点：
+
+1.磁盘IO次数大大减少。
+
+2.比较是在内存进行的，比较的耗时可以忽略不计
+
+3.B树高度一般2至3层就能满足大部分的应用场景，所以使用B树构建索引可以很好的提升查询的效率
+
+缺点：
+
+1.B树不支持范围查询的快速查找，需要回到根节点重新遍历查找
+
+2.空间占用较大：如果data存储的是行记录，行的大小随着列数的增多，所占空间会变大。一个页中可存储的数据量就会变少，树相应就会变高，磁盘IO次数就会变大。
+
+**B+树：改进的B树，非叶子节点不存储数据**
+
+B树：非叶子节点和叶子节点都会存储数据
+
+B+树：只有叶子节点才会存储数据，非叶子节点只存储键值。叶子节点之间使用双向指针连接，最底层的叶子节点形成一个双向有序链表
+
+
 
 #### 题目 03- 什么是 MVCC？<br>
 
@@ -227,3 +439,9 @@ TRX_ID等于m_create_trx_id，表示是当前事务，可以被当前事务访�
 TRX_ID大于m_up_limit_id，表示是在当前事务后才创建的事务，当前事务不可见
 
 TRX_ID在low和up的limit之间，则需要判断是否在m_ids里面。如果RC级别，已提交，不在m_ids活跃事务id里面，则可见；如果RR级别，无论是否提交都不可见
+
+
+
+参考：
+
+1.Java高级工程师训练营
