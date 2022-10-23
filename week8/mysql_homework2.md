@@ -27,11 +27,11 @@ Insert into tab_user(id,name,age,address) values (1,'刘备',18,'蜀国');
 
 操作步骤
 
-<img src="/Users/huangzixiao/Library/Application Support/typora-user-images/image-20221023155441664.png" alt="image-20221023155441664" style="zoom: 67%;" />
+<img src="https://user-images.githubusercontent.com/32962270/197382347-0db42174-a056-4775-b728-3c96daf74516.png" alt="image-20221023155441664" style="zoom: 67%;" />
 
 版本链：
 
-<img src="/Users/huangzixiao/Library/Application Support/typora-user-images/image-20221023160400073.png" alt="image-20221023160400073" style="zoom:67%;" />
+<img src="https://user-images.githubusercontent.com/32962270/197382380-e8102500-50e1-47de-a642-c416be963919.png" alt="image-20221023160400073" style="zoom:67%;" />
 
 事务01:
 
@@ -182,7 +182,7 @@ c.THREAD_ID;
 
 要点：<br>
 
-<img src="/Users/huangzixiao/Library/Application Support/typora-user-images/image-20221023154538967.png" alt="image-20221023154538967" style="zoom:50%;" />
+<img src="https://user-images.githubusercontent.com/32962270/197382280-529923fc-4e0a-4229-8c12-fbf26716a792.png" alt="image-20221023154538967" style="zoom:50%;" />
 
 Redo 日志<br>
 ReadView<br>
