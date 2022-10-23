@@ -1,5 +1,5 @@
 一条SQL语句在MySQL中是如何执行的？
-![image](https://user-images.githubusercontent.com/32962270/197373222-6edd6b66-f358-45b6-846d-4cd55cccf6b2.png=300x300)
+![image](https://user-images.githubusercontent.com/32962270/197373222-6edd6b66-f358-45b6-846d-4cd55cccf6b2.png)
 
 1.连接器
 负责跟客户端建立连接、获取权限、维持和管理连接
