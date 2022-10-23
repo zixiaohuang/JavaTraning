@@ -8,7 +8,28 @@
 
 理解MVCC实现原理
 核心思想：读不加锁，读写不冲突
+关键要素：Undo日志和ReadView
 实现原理：数据快照，不同的事务访问不同版本的数据快照，从而实现事务下对不同数据的隔离级别。InnoDB通过事务的undo日志实现了多版本的数据快照。
+
+Undo日志分类：
+1.Insert Undo日志：Insert操作产生的日志
+insert操作记录只对本事务可见，对其他事务不可见，所以事务提交后直接删除Undo日志无需回收
+
+2.Update Undo日志：Update或Delete操作产生的日志
+修改事务后，不能立即删除Update Undo日志而是会存入UndoLog链表中，等待Purge线程回收
+
+ReadView
+m_ids:生成ReadView时，当前活跃的事务id列表
+m_low_limit_id:事务id下限，当前活跃事务中最小的事务id
+m_up_limit_id:事务id上限，生成ReadView时，应该分配给下一个事务的id值
+m_creator_trx_id:生成该ReadView的事务的事务id
+
+什么时候生成ReadView？
+RC和RR隔离级别的差异原因是因为ReadView的生成时机不同
+RC：开启事务后，每次select生成ReadView
+RR：开启事务后，第一次select生成ReadView
+
+对比LBCC（Lock Based Concurrency Control）：当事务只是加读锁，那么其他事务就不能有写锁，也就是不能修改数据；而假如当前事务要加写锁，那么其他事务就不能持有任何锁。
 
 实验前准备：
 创建表
