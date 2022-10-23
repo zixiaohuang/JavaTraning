@@ -211,23 +211,20 @@ c.THREAD_ID;
 
 MyIsam索引
 
+1.主键索引<br>
+<img src="https://user-images.githubusercontent.com/32962270/197398259-2524f43b-7813-4764-ac82-5553a436e8c1.png" alt="image-20221023221009032" style="zoom:67%;" />
 
-
-1.主键索引
-
-<img src="/Users/huangzixiao/Library/Application Support/typora-user-images/image-20221023221009032.png" alt="image-20221023221009032" style="zoom:67%;" />
 
 2.辅助索引
-
 MyISAM中辅助索引和主键索引结构一样，没有区别，叶子节点存储的都是行记录的**磁盘地址**。只是主键索引的键值是唯一的，而辅助索引的键值可以重复。
 
 
 
 InnoDB索引
-
 **1.聚簇索引**
 
-<img src="/Users/huangzixiao/Library/Application Support/typora-user-images/image-20221023175525168.png" alt="image-20221023175525168" style="zoom:67%;" />
+<img src="https://user-images.githubusercontent.com/32962270/197398311-27671c35-b679-44c4-a6ac-4ae5221d65e6.png" alt="image-20221023175525168" style="zoom:67%;" />
+
 
 一般情况下，聚簇索引等同于主键索引。主键索引的叶子节点会存储数据行。
 
@@ -245,7 +242,8 @@ InnoDB创建索引的具体规则如下：
 
 **2.辅助索引**
 
-<img src="/Users/huangzixiao/Library/Application Support/typora-user-images/image-20221023180600328.png" alt="image-20221023180600328" style="zoom:67%;" />
+<img src="https://user-images.githubusercontent.com/32962270/197398348-afa2443b-8e23-4b81-9df4-6b20b530d1d8.png" alt="image-20221023180600328" style="zoom:67%;" />
+
 
 除聚簇索引之外的所有索引都称为辅助索引。辅助索引只会存储主键值而非磁盘地址。
 
@@ -264,7 +262,7 @@ InnoDB创建索引的具体规则如下：
 
 表t_multiple_indx，id为主键列，创建了一个联合索引id x_abc(a,b,c)，构建的B+树索引结构如图所示。索引树中节点中的索引项按照(a,b,c)的顺序从大到小排列，先按照a排序，a列相同时按照b列排序，b列相同按照c列排序。如果索引项都相同，按照主键id排序
 
-<img src="/Users/huangzixiao/Library/Application Support/typora-user-images/image-20221023192746579.png" alt="image-20221023192746579" style="zoom:67%;" />
+<img src="https://user-images.githubusercontent.com/32962270/197398399-619a8cbe-250d-4360-8506-98fd0c7a68fc.png" alt="image-20221023192746579" style="zoom:67%;" />
 
 最左匹配原则：组合索引查询是，会一直向右匹配直到遇到范围查询(>、<、between、like)就停止匹配。如果查询条件不包括a列，比如筛选条件只有(b,c)或者c列是无法使用组合索引的。所以创建(a,b,c)相当于创建了(a)、(a,b)、(a,b,c)三个索引
 
@@ -303,12 +301,12 @@ select中列数据，如果可以直接在辅助索引树上全部获取，也�
 ##### 如何知道 SQL 是否用到了索引？
 
 `explain select a,b from  t_multiple_index where  b=16;`
+<img width="832" alt="image" src="https://user-images.githubusercontent.com/32962270/197398452-5a8ab3fb-4a65-46f4-a080-5994e94ca2d1.png">
 
-![image-20221023215949555](/Users/huangzixiao/Library/Application Support/typora-user-images/image-20221023215949555.png)
 
 `explain select * from t_multiple_index where b=16 and c=4 and a=13;`
+<img width="867" alt="image" src="https://user-images.githubusercontent.com/32962270/197398501-e929e531-b798-4a42-af74-798534b8806d.png">
 
-![image-20221023220010370](/Users/huangzixiao/Library/Application Support/typora-user-images/image-20221023220010370.png)
 
 通过explain查看
 
@@ -367,7 +365,7 @@ key：实际采用哪个索引来优化对该表的访问。
 **B树**
 
 想减少IO操作，就要尽量降低树的高度。每个节点存储多个元素，就将二叉树改造成了多叉树，通过增加树的叉树，将树从高瘦变成矮胖。
-
+<img src="https://user-images.githubusercontent.com/32962270/197398549-ee5e8cc3-266a-4afa-bd8a-19111594b7a9.png" alt="image-20221023154538967" style="zoom:67%;" /><br>
 优点：
 
 1.磁盘IO次数大大减少。
@@ -387,8 +385,7 @@ key：实际采用哪个索引来优化对该表的访问。
 B树：非叶子节点和叶子节点都会存储数据
 
 B+树：只有叶子节点才会存储数据，非叶子节点只存储键值。叶子节点之间使用双向指针连接，最底层的叶子节点形成一个双向有序链表
-
-
+<img src="https://user-images.githubusercontent.com/32962270/197398530-41f8141a-d8e0-41dc-ba6e-244a46ffa255.png" alt="image-20221023154538967" style="zoom:67%;" />
 
 #### 题目 03- 什么是 MVCC？<br>
 
