@@ -8,16 +8,16 @@
 
 实验前准备：<br>
 创建表<br>
-CREATE TABLE t (
-    id INT PRIMARY KEY,
-    c VARCHAR(100)
+CREATE TABLE t (<br>
+    id INT PRIMARY KEY,<br>
+    c VARCHAR(100)<br>
 ) Engine=InnoDB;<br>
 <br>
 插入数据<br>
 INSERTINTOtVALUES(1,'刘备');<br>
 <br>
-回答范式：<br>
-1. 案例 01- 读已提交 RC 隔离级别下的可见性分析<br>
+回答范式：
+1. 案例 01- 读已提交 RC 隔离级别下的可见性分析
 目标<br>
 RC read committed：读已提交，一个事务读到另一个事务已经提交的数据<br>
 存在问题：不可重复读<br>
