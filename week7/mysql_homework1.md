@@ -2,7 +2,6 @@
 <div align="center">
 <img src=https://user-images.githubusercontent.com/32962270/197373222-6edd6b66-f358-45b6-846d-4cd55cccf6b2.png width=50%/>
 </div>
-
 1.连接器<br>
 负责跟客户端建立连接、获取权限、维持和管理连接<br>
 如果用户名或密码不对，你就会收到一个"Access denied for user"的错误，然后客户端程序结束执行。<br>
