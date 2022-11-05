@@ -82,7 +82,8 @@ DDL数据定义语言（Data Definition Language）：对数据库中的某些**
 
    - 记录锁（Record Locks）：锁定索引中一条记录
    
-   ![image-20221030171205681](/Users/huangzixiao/Library/Application Support/typora-user-images/image-20221030171205681.png)
+   <img src="https://user-images.githubusercontent.com/32962270/200098172-f73f0dd8-67a0-491c-95ad-3d9d40b1e91e.png" alt="image-20221023221009032" style="zoom:67%;" />
+
    
    ```sql
    # 加记录读锁
@@ -101,11 +102,13 @@ DDL数据定义语言（Data Definition Language）：对数据库中的某些**
    
    - 间隙锁（Gap Locks）：仅仅锁住一个索引区间，开区间，不包括双端端点和索引记录
    
-   ![image-20221101203903445](/Users/huangzixiao/Library/Application Support/typora-user-images/image-20221101203903445.png)
+   <img src="https://user-images.githubusercontent.com/32962270/200098201-a5c06454-f587-4f78-8516-415e7c89f1e6.png" alt="image-20221023221009032" style="zoom:67%;" />
+
    
    - 临键锁（Next-Key Locks）：记录锁和间隙锁的组合，左开右闭区间，解决幻读问题
    
-     ![image-20221101203947507](/Users/huangzixiao/Library/Application Support/typora-user-images/image-20221101203947507.png)
+     <img src="https://user-images.githubusercontent.com/32962270/200098230-54907aaf-60fa-4b37-99d9-4d0f884d26a2.png" alt="image-20221023221009032" style="zoom:67%;" />
+
    
      - 默认情况下，InnoDB使用临键锁来锁定记录，但会在不同场景中退化
      - 场景1:唯一性字段等值且记录存在，退化为记录锁
@@ -147,7 +150,8 @@ DDL数据定义语言（Data Definition Language）：对数据库中的某些**
 
 意向锁是MySQL内部使用，不需要用户干预。意向锁和行锁可以共存，意向锁主要作用是为了**全表更新数据时的提升性能**
 
-![image-20221101212256785](/Users/huangzixiao/Library/Application Support/typora-user-images/image-20221101212256785.png)
+<img src="https://user-images.githubusercontent.com/32962270/200098254-31ebdb1c-d4ee-41ee-be4f-64d61b50816b.png" alt="image-20221023221009032" style="zoom:67%;" />
+
 
 - #### 什么是死锁，为什么会发生，如何排查？
 
@@ -164,9 +168,10 @@ DDL数据定义语言（Data Definition Language）：对数据库中的某些**
 SHOW ENGINE INNODB STATUS;
 ````
 
-![image-20221105103708316](/Users/huangzixiao/Library/Application Support/typora-user-images/image-20221105103708316.png)
+<img src="https://user-images.githubusercontent.com/32962270/200098323-7230322c-f9a3-4024-bdba-2d09b3ccbf2b.png" alt="image-20221023221009032" style="zoom:67%;" />
 
-![image-20221105104147375](/Users/huangzixiao/Library/Application Support/typora-user-images/image-20221105104147375.png)
+
+<img src="https://user-images.githubusercontent.com/32962270/200098297-8e9f451d-66a1-43ea-ac0f-9abd354aaeed.png" alt="image-20221023221009032" style="zoom:67%;" />
 
 - #### 行锁是通过加在什么上完成的锁定？
 
@@ -220,10 +225,11 @@ explain select * from t_multiple_index where a=13 and b>15 and c='5' and d='pdf'
 使用索引下推
 
 索引下推，即使中断了，也会继续用剩下的索引进行过滤
+   
+<img src="https://user-images.githubusercontent.com/32962270/200098448-73405e5e-1bf2-4516-b9b5-ac5d9a7d6661.png" alt="image-20221023221009032" style="zoom:67%;" />
+   
+<img src="https://user-images.githubusercontent.com/32962270/200098398-313e1a44-413a-4dd4-8e23-7955ffb2f593.png" alt="image-20221023221009032" style="zoom:67%;" />
 
-![image-20221030082615829](/Users/huangzixiao/Library/Application Support/typora-user-images/image-20221030082615829.png)
-
-![image-20221030084052973](/Users/huangzixiao/Library/Application Support/typora-user-images/image-20221030084052973.png)
 
 筛选条件 a=13 and b >= 15 and c = 5
 
@@ -245,9 +251,9 @@ explain select * from t_multiple_index where a=13 and b>15 and c='5' and d='pdf'
 
 不使用索引下推
 
-<img src="/Users/huangzixiao/Library/Application Support/typora-user-images/image-20221030082510621.png" alt="image-20221030082510621" style="zoom:50%;" />
-
-![image-20221030083353653](/Users/huangzixiao/Library/Application Support/typora-user-images/image-20221030083353653.png)
+<img src="https://user-images.githubusercontent.com/32962270/200098532-62578ccf-5c4b-4648-9dfc-a0d2fef9c2e9.png" alt="image-20221023221009032" style="zoom:67%;" />
+ 
+<img src="https://user-images.githubusercontent.com/32962270/200098484-59b586b8-dba8-4d61-856e-51ae080959b7.png" alt="image-20221030082510621" style="zoom:50%;" />
 
 1.(13, 16, 4, id = 1) 根据最左匹配前缀原则，联合索引检索定位到索引项(13, 16, 4, id = 1), id = 1回表查询，获得id = 1行记录。返回给MySQL服务层，服务层使用剩余条件c=5 and d=‘pdf’过滤，不符合要求，直接丢弃。
 
